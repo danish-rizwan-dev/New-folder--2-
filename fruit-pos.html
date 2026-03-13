@@ -2,341 +2,227 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Octa Fruit Fusion POS</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Octa Fruit Fusion PRO</title>
 <style>
-
-:root{
---red:#ff3131;
---blue:#00d4ff;
---glass:rgba(255,255,255,0.05);
---border:rgba(255,255,255,0.12);
---green:#00ff88;
+:root {
+    --red: #ff3131;
+    --blue: #00d4ff;
+    --green: #00ff88;
+    --glass: rgba(255, 255, 255, 0.06);
+    --border: rgba(255, 255, 255, 0.12);
+    --bg: #050508;
 }
 
-body{
-margin:0;
-font-family:system-ui;
-background:#050508;
-color:white;
+body {
+    margin: 0; font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg); color: white;
+    -webkit-font-smoothing: antialiased;
 }
 
-.header{
-padding:20px;
-background:#0c0d14;
-border-bottom:1px solid var(--border);
-position:sticky;
-top:0;
+/* Header & HUD */
+.header {
+    background: rgba(12, 13, 20, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 25px 20px;
+    position: sticky; top: 0; z-index: 100;
 }
 
-.profit{
-font-size:40px;
-text-align:center;
-font-weight:900;
+.profit-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 2px; text-align: center; }
+.profit { font-size: 48px; text-align: center; font-weight: 900; margin: 5px 0; text-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+
+.stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+.stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; }
+.stat-card span { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.stat-card b { font-size: 18px; }
+
+/* Content Sections */
+.content { padding: 20px; padding-bottom: 100px; }
+.section-title { font-size: 12px; color: var(--red); text-transform: uppercase; font-weight: 800; margin: 25px 0 12px; letter-spacing: 1px; display: flex; align-items: center; }
+.section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); margin-left: 10px; }
+
+/* Buttons */
+.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn { 
+    padding: 20px 10px; border-radius: 16px; border: 1px solid var(--border);
+    background: var(--glass); font-size: 16px; font-weight: 800; color: white;
+    transition: all 0.2s; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
+.btn-red { border-color: var(--red); color: var(--red); box-shadow: 0 4px 15px rgba(255, 49, 49, 0.1); }
+.btn-blue { border-color: var(--blue); color: var(--blue); box-shadow: 0 4px 15px rgba(0, 212, 255, 0.1); }
+
+/* Inputs & Logs */
+input {
+    width: 100%; padding: 16px; border-radius: 12px; border: 1px solid var(--border);
+    background: rgba(0,0,0,0.3); color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 16px;
+}
+.logs { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); max-height: 200px; overflow: auto; }
+.log { padding: 12px 15px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+.log:last-child { border-bottom: none; }
+
+/* History Card */
+.history-card { background: rgba(0, 212, 255, 0.05); padding: 15px; border-radius: 15px; border: 1px dashed var(--blue); }
+
+.sync-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; padding: 15px 20px;
+    background: rgba(5, 5, 8, 0.9); backdrop-filter: blur(10px);
+}
+.btn-sync {
+    width: 100%; padding: 18px; border: none; background: var(--green);
+    color: #000; font-weight: 900; border-radius: 16px; font-size: 14px; text-transform: uppercase;
 }
 
-.stats{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:10px;
-margin-top:15px;
+#loading-overlay {
+    position: fixed; top: 0; right: 20px; padding: 10px; color: var(--green); font-size: 10px; display: none;
 }
-
-.card{
-background:var(--glass);
-border:1px solid var(--border);
-border-radius:12px;
-padding:10px;
-text-align:center;
-}
-
-.content{
-padding:20px;
-}
-
-.btn-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:15px;
-}
-
-.btn{
-padding:25px;
-border-radius:16px;
-border:1px solid var(--border);
-background:var(--glass);
-font-size:18px;
-font-weight:700;
-color:white;
-}
-
-.btn-red{
-border-color:var(--red);
-color:var(--red);
-}
-
-.btn-blue{
-border-color:var(--blue);
-color:var(--blue);
-}
-
-.btn:active{
-transform:scale(.95);
-}
-
-input{
-width:100%;
-padding:14px;
-border-radius:12px;
-border:1px solid var(--border);
-background:#111;
-color:white;
-margin-bottom:10px;
-}
-
-.logs{
-margin-top:15px;
-max-height:220px;
-overflow:auto;
-border-radius:12px;
-border:1px solid var(--border);
-}
-
-.log{
-padding:10px 15px;
-display:flex;
-justify-content:space-between;
-border-bottom:1px solid rgba(255,255,255,.05);
-font-size:14px;
-}
-
-.sync{
-width:100%;
-margin-top:20px;
-padding:18px;
-border:none;
-background:var(--green);
-color:black;
-font-weight:900;
-border-radius:15px;
-}
-
-.section{
-margin-top:25px;
-font-size:12px;
-color:#888;
-text-transform:uppercase;
-letter-spacing:1px;
-}
-
 </style>
 </head>
 
 <body>
 
+<div id="loading-overlay">SYNCING...</div>
+
 <div class="header">
-
-<div class="profit" id="profit">₹0</div>
-
-<div class="stats">
-
-<div class="card">
-<div>Orders</div>
-<div id="orders">0</div>
+    <div class="profit-label">Today's Net Profit</div>
+    <div class="profit" id="profit">₹0</div>
+    <div class="stats-bar">
+        <div class="stat-card"><span>Orders</span><b id="orders">0</b></div>
+        <div class="stat-card"><span>Sales</span><b id="sales">₹0</b></div>
+        <div class="stat-card"><span>Exp</span><b id="expense" style="color:var(--red)">₹0</b></div>
+    </div>
 </div>
-
-<div class="card">
-<div>Sales</div>
-<div id="sales">₹0</div>
-</div>
-
-<div class="card">
-<div>Expense</div>
-<div id="expense">₹0</div>
-</div>
-
-</div>
-
-</div>
-
 
 <div class="content">
+    <div class="section-title">Quick Sale</div>
+    <div class="btn-grid">
+        <button class="btn btn-red" onclick="addItem('order','Small Fusion',120)">🥤 SMALL ₹120</button>
+        <button class="btn btn-blue" onclick="addItem('order','Large Fusion',190)">🥤 LARGE ₹190</button>
+    </div>
 
-<div class="section">Quick Order</div>
+    <div class="section-title">Live Activity</div>
+    <div class="logs" id="logs"></div>
 
-<div class="btn-grid">
+    <div class="section-title">Log Expense</div>
+    <input id="item" placeholder="Expense Item (e.g. Milk)">
+    <input id="cost" type="number" placeholder="Amount (₹)" inputmode="decimal">
+    <button class="btn" style="width:100%" onclick="addItem('expense')">Save Expense</button>
 
-<button class="btn btn-red" onclick="addOrder('Small Fusion',120)">
-SMALL ₹120
-</button>
-
-<button class="btn btn-blue" onclick="addOrder('Large Fusion',190)">
-LARGE ₹190
-</button>
-
+    <div class="section-title">History Archive</div>
+    <div class="history-card">
+        <input type="date" id="hist-date" style="margin-bottom:10px">
+        <button class="btn" style="width:100%; font-size:12px; padding:12px" onclick="fetchHistory()">Query Database</button>
+        <div id="hist-result" style="margin-top:12px; font-size:13px; color:var(--blue)"></div>
+    </div>
 </div>
 
-
-<div class="section">Activity</div>
-
-<div class="logs" id="logs"></div>
-
-
-<div class="section">Add Expense</div>
-
-<input id="item" placeholder="Item name">
-
-<input id="cost" type="number" placeholder="Cost">
-
-<button class="btn" onclick="addExpense()">Add Expense</button>
-
-
-<button class="sync" onclick="syncData()">
-END SHIFT & SYNC
-</button>
-
+<div class="sync-bar">
+    <button class="btn-sync" onclick="endShift()">End Shift & Sync Data</button>
 </div>
-
 
 <script>
+const API = "https://script.google.com/macros/s/AKfycbwR0ruHmCXoN_elJEZyvb47mEP2rNsYRiherTtFCyK_wwtvIj3OVUDgXSbS-FFYMYN_/exec";
 
-const API="https://script.google.com/macros/s/AKfycbxR0ruHmCXoN_elJEZyvb47mEP2rNsYRiherTtFCyK_wwtvIj3OVUDgXSbS-FFYMYN_/exec"
+let data = {
+    orders: 0, sales: 0, expense: 0,
+    history: JSON.parse(localStorage.getItem("pos_v4_history")) || []
+};
 
-let data={
-orders:0,
-sales:0,
-expense:0,
-history:JSON.parse(localStorage.getItem("pos_history"))||[]
+function updateUI() {
+    let profit = data.sales - data.expense;
+    document.getElementById("profit").innerText = "₹" + profit;
+    document.getElementById("orders").innerText = data.orders;
+    document.getElementById("sales").innerText = "₹" + data.sales;
+    document.getElementById("expense").innerText = "₹" + data.expense;
+
+    const logBox = document.getElementById("logs");
+    if(data.history.length === 0) {
+        logBox.innerHTML = `<div style="padding:20px; text-align:center; color:#444; font-size:12px">Waiting for first sale...</div>`;
+    } else {
+        logBox.innerHTML = data.history.map(i => `
+            <div class="log">
+                <span>${i.type === "order" ? "🥤" : "📦"} ${i.name}</span>
+                <span style="color:${i.type === "order" ? "var(--green)" : "var(--red)"}">
+                    ${i.type === "order" ? "+" : "-"}₹${i.amt}
+                </span>
+            </div>
+        `).reverse().join("");
+    }
+    localStorage.setItem("pos_v4_history", JSON.stringify(data.history));
 }
 
-function updateUI(){
-
-let profit=data.sales-data.expense
-
-document.getElementById("profit").innerText="₹"+profit
-document.getElementById("orders").innerText=data.orders
-document.getElementById("sales").innerText="₹"+data.sales
-document.getElementById("expense").innerText="₹"+data.expense
-
-let logs=document.getElementById("logs")
-
-logs.innerHTML=data.history.map(i=>`
-<div class="log">
-<span>${i.type==="order"?"🥤":"📦"} ${i.name}</span>
-<span>${i.type==="order"?"+":"-"}₹${i.amt}</span>
-</div>
-`).reverse().join("")
-
-localStorage.setItem("pos_history",JSON.stringify(data.history))
-
+async function serverCall(payload) {
+    document.getElementById("loading-overlay").style.display = "block";
+    try {
+        await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+    } finally {
+        setTimeout(() => document.getElementById("loading-overlay").style.display = "none", 1000);
+    }
 }
 
-async function sendToServer(payload){
+function addItem(type, name, amt) {
+    if (type === 'expense') {
+        name = document.getElementById("item").value;
+        amt = parseFloat(document.getElementById("cost").value);
+        if (!name || isNaN(amt)) return alert("Invalid Input");
+        data.expense += amt;
+        document.getElementById("item").value = "";
+        document.getElementById("cost").value = "";
+    } else {
+        data.orders++;
+        data.sales += amt;
+        navigator.vibrate?.(30);
+    }
 
-try{
-
-await fetch(API,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(payload)
-})
-
-}catch(e){
-console.log("Sync failed")
+    const entry = { type, name, amt };
+    data.history.push(entry);
+    serverCall(entry);
+    updateUI();
 }
 
+async function fetchHistory() {
+    const date = document.getElementById("hist-date").value;
+    if(!date) return alert("Select a date");
+    document.getElementById("hist-result").innerText = "Scanning archives...";
+    try {
+        const res = await fetch(`${API}?date=${date}`);
+        const json = await res.json();
+        document.getElementById("hist-result").innerHTML = `
+            <b>Date:</b> ${date}<br>
+            <b>Orders:</b> ${json.orders} | <b>Profit:</b> ₹${json.profit}
+        `;
+    } catch(e) {
+        document.getElementById("hist-result").innerText = "No data for this date.";
+    }
 }
 
-function addOrder(name,amt){
-
-data.orders++
-data.sales+=amt
-
-data.history.push({
-type:"order",
-name:name,
-amt:amt
-})
-
-sendToServer({
-type:"order",
-name:name,
-amt:amt
-})
-
-navigator.vibrate?.(30)
-
-updateUI()
-
+function endShift() {
+    if(!confirm("End Shift? This will clear today's HUD and sync to Summary.")) return;
+    const payload = {
+        type: "summary",
+        orders: data.orders,
+        sales: data.sales,
+        expense: data.expense,
+        profit: data.sales - data.expense
+    };
+    serverCall(payload);
+    data = { orders: 0, sales: 0, expense: 0, history: [] };
+    updateUI();
+    alert("Mission Complete. Shift Synced!");
 }
 
-function addExpense(){
-
-let name=document.getElementById("item").value
-let cost=parseFloat(document.getElementById("cost").value)
-
-if(!name||isNaN(cost)) return alert("Enter valid data")
-
-data.expense+=cost
-
-data.history.push({
-type:"expense",
-name:name,
-amt:cost
-})
-
-document.getElementById("item").value=""
-document.getElementById("cost").value=""
-
-sendToServer({
-type:"expense",
-name:name,
-amt:cost
-})
-
-updateUI()
-
+// Initial hydration from history
+function init() {
+    data.orders = 0; data.sales = 0; data.expense = 0;
+    data.history.forEach(i => {
+        if(i.type === "order") { data.orders++; data.sales += i.amt; }
+        else { data.expense += i.amt; }
+    });
+    updateUI();
 }
-
-function syncData(){
-
-if(!confirm("Send summary to Google Sheets?")) return
-
-let payload={
-type:"summary",
-orders:data.orders,
-sales:data.sales,
-expense:data.expense,
-profit:data.sales-data.expense,
-date:new Date().toISOString().slice(0,10)
-}
-
-sendToServer(payload)
-
-data={
-orders:0,
-sales:0,
-expense:0,
-history:[]
-}
-
-updateUI()
-
-alert("Shift synced!")
-
-}
-
-data.history.forEach(i=>{
-if(i.type==="order"){data.orders++;data.sales+=i.amt}
-else{data.expense+=i.amt}
-})
-
-updateUI()
+init();
 
 </script>
-
 </body>
 </html>
