@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octa Fruit Fusion POS</title>
+
+<style>
+
+:root{
+--red:#ff3131;
+--blue:#00d4ff;
+--glass:rgba(255,255,255,0.05);
+--border:rgba(255,255,255,0.12);
+--green:#00ff88;
+}
+
+body{
+margin:0;
+font-family:system-ui;
+background:#050508;
+color:white;
+}
+
+.header{
+padding:20px;
+background:#0c0d14;
+border-bottom:1px solid var(--border);
+position:sticky;
+top:0;
+}
+
+.profit{
+font-size:40px;
+text-align:center;
+font-weight:900;
+}
+
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:10px;
+margin-top:15px;
+}
+
+.card{
+background:var(--glass);
+border:1px solid var(--border);
+border-radius:12px;
+padding:10px;
+text-align:center;
+}
+
+.content{
+padding:20px;
+}
+
+.btn-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+.btn{
+padding:25px;
+border-radius:16px;
+border:1px solid var(--border);
+background:var(--glass);
+font-size:18px;
+font-weight:700;
+color:white;
+}
+
+.btn-red{
+border-color:var(--red);
+color:var(--red);
+}
+
+.btn-blue{
+border-color:var(--blue);
+color:var(--blue);
+}
+
+.btn:active{
+transform:scale(.95);
+}
+
+input{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:1px solid var(--border);
+background:#111;
+color:white;
+margin-bottom:10px;
+}
+
+.logs{
+margin-top:15px;
+max-height:220px;
+overflow:auto;
+border-radius:12px;
+border:1px solid var(--border);
+}
+
+.log{
+padding:10px 15px;
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid rgba(255,255,255,.05);
+font-size:14px;
+}
+
+.sync{
+width:100%;
+margin-top:20px;
+padding:18px;
+border:none;
+background:var(--green);
+color:black;
+font-weight:900;
+border-radius:15px;
+}
+
+.section{
+margin-top:25px;
+font-size:12px;
+color:#888;
+text-transform:uppercase;
+letter-spacing:1px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+<div class="profit" id="profit">₹0</div>
+
+<div class="stats">
+
+<div class="card">
+<div>Orders</div>
+<div id="orders">0</div>
+</div>
+
+<div class="card">
+<div>Sales</div>
+<div id="sales">₹0</div>
+</div>
+
+<div class="card">
+<div>Expense</div>
+<div id="expense">₹0</div>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="content">
+
+<div class="section">Quick Order</div>
+
+<div class="btn-grid">
+
+<button class="btn btn-red" onclick="addOrder('Small Fusion',120)">
+SMALL ₹120
+</button>
+
+<button class="btn btn-blue" onclick="addOrder('Large Fusion',190)">
+LARGE ₹190
+</button>
+
+</div>
+
+
+<div class="section">Activity</div>
+
+<div class="logs" id="logs"></div>
+
+
+<div class="section">Add Expense</div>
+
+<input id="item" placeholder="Item name">
+
+<input id="cost" type="number" placeholder="Cost">
+
+<button class="btn" onclick="addExpense()">Add Expense</button>
+
+
+<button class="sync" onclick="syncData()">
+END SHIFT & SYNC
+</button>
+
+</div>
+
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbxR0ruHmCXoN_elJEZyvb47mEP2rNsYRiherTtFCyK_wwtvIj3OVUDgXSbS-FFYMYN_/exec"
+
+let data={
+orders:0,
+sales:0,
+expense:0,
+history:JSON.parse(localStorage.getItem("pos_history"))||[]
+}
+
+function updateUI(){
+
+let profit=data.sales-data.expense
+
+document.getElementById("profit").innerText="₹"+profit
+document.getElementById("orders").innerText=data.orders
+document.getElementById("sales").innerText="₹"+data.sales
+document.getElementById("expense").innerText="₹"+data.expense
+
+let logs=document.getElementById("logs")
+
+logs.innerHTML=data.history.map(i=>`
+<div class="log">
+<span>${i.type==="order"?"🥤":"📦"} ${i.name}</span>
+<span>${i.type==="order"?"+":"-"}₹${i.amt}</span>
+</div>
+`).reverse().join("")
+
+localStorage.setItem("pos_history",JSON.stringify(data.history))
+
+}
+
+async function sendToServer(payload){
+
+try{
+
+await fetch(API,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(payload)
+})
+
+}catch(e){
+console.log("Sync failed")
+}
+
+}
+
+function addOrder(name,amt){
+
+data.orders++
+data.sales+=amt
+
+data.history.push({
+type:"order",
+name:name,
+amt:amt
+})
+
+sendToServer({
+type:"order",
+name:name,
+amt:amt
+})
+
+navigator.vibrate?.(30)
+
+updateUI()
+
+}
+
+function addExpense(){
+
+let name=document.getElementById("item").value
+let cost=parseFloat(document.getElementById("cost").value)
+
+if(!name||isNaN(cost)) return alert("Enter valid data")
+
+data.expense+=cost
+
+data.history.push({
+type:"expense",
+name:name,
+amt:cost
+})
+
+document.getElementById("item").value=""
+document.getElementById("cost").value=""
+
+sendToServer({
+type:"expense",
+name:name,
+amt:cost
+})
+
+updateUI()
+
+}
+
+function syncData(){
+
+if(!confirm("Send summary to Google Sheets?")) return
+
+let payload={
+type:"summary",
+orders:data.orders,
+sales:data.sales,
+expense:data.expense,
+profit:data.sales-data.expense,
+date:new Date().toISOString().slice(0,10)
+}
+
+sendToServer(payload)
+
+data={
+orders:0,
+sales:0,
+expense:0,
+history:[]
+}
+
+updateUI()
+
+alert("Shift synced!")
+
+}
+
+data.history.forEach(i=>{
+if(i.type==="order"){data.orders++;data.sales+=i.amt}
+else{data.expense+=i.amt}
+})
+
+updateUI()
+
+</script>
+
+</body>
+</html>
